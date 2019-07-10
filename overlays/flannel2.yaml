@@ -2,19 +2,21 @@
 kind: ConfigMap
 apiVersion: v1
 metadata:
-  name: kube-flannel-cfg
+  name: kube-flannel-cfg2
   namespace: kube-system
   labels:
     tier: node
-    app: flannel
+    app: flannel2
 data:
   cni-conf.json: |
     {
-      "name": "cbr0",
+      "name": "cbr1",
       "plugins": [
         {
           "type": "flannel",
+          "subnetFile": "/run/flannel2/subnet.env",
           "delegate": {
+            "bridge": "cbr1",
             "hairpinMode": true,
             "isDefaultGateway": true
           }
@@ -29,26 +31,27 @@ data:
     }
   net-conf.json: |
     {
-      "Network": "10.244.0.0/16",
+      "Network": "172.24.0.0/16",
       "Backend": {
-        "Type": "vxlan"
+        "Type": "vxlan", 
+        "VNI": 2
       }
     }
 ---
 apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
-  name: kube-flannel-ds-amd64
+  name: kube-flannel-ds2
   namespace: kube-system
   labels:
     tier: node
-    app: flannel
+    app: flannel2
 spec:
   template:
     metadata:
       labels:
         tier: node
-        app: flannel
+        app: flannel2
     spec:
       hostNetwork: true
       nodeSelector:
@@ -65,14 +68,14 @@ spec:
         args:
         - -f
         - /etc/kube-flannel/cni-conf.json
-        - /etc/cni/net.d/10-flannel.conflist
+        - /etc/cni/net.d/11-flannel.conflist
         volumeMounts:
         - name: cni
           mountPath: /etc/cni/net.d
         - name: flannel-cfg
           mountPath: /etc/kube-flannel/
       containers:
-      - name: kube-flannel
+      - name: kube-flannel2
         image: quay.io/coreos/flannel:v0.11.0-amd64
         command:
         - /opt/bin/flanneld
@@ -91,6 +94,10 @@ spec:
           capabilities:
              add: ["NET_ADMIN"]
         env:
+        - name: FLANNELD_IFACE
+          value: eth1
+        - name: FLANNELD_KUBE_ANNOTATION_PREFIX
+          value: flannel.2.coreos.com
         - name: POD_NAME
           valueFrom:
             fieldRef:
@@ -107,11 +114,10 @@ spec:
       volumes:
         - name: run
           hostPath:
-            path: /run/flannel
+            path: /run/flannel2
         - name: cni
           hostPath:
             path: /etc/cni/net.d
         - name: flannel-cfg
           configMap:
-            name: kube-flannel-cfg
----
+            name: kube-flannel-cfg2
