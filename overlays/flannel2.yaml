@@ -76,7 +76,8 @@ spec:
           mountPath: /etc/kube-flannel/
       containers:
       - name: kube-flannel2
-        image: quay.io/coreos/flannel:v0.11.0-amd64
+        #image: quay.io/coreos/flannel:v0.11.0-amd64
+        image: cargo.caicloudprivatetest.com/hhl/flannel:v0.11.0-hhl
         command:
         - /opt/bin/flanneld
         args:
