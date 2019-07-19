@@ -26,7 +26,8 @@ complete_ins1() {
 
 complete_ins2() {
     complete_kl_conf ens4 172.23.1.200 172.23.1.51 172.23.1.52 172.23.1.53 | \
-        sed -e 's/@SERVER@/172.23.1.200 0/g' -e 's/lb_kind DR/lb_kind NAT/g'
+        sed 's/@SERVER@/fwmark 2/g'
+        #sed -e 's/@SERVER@/172.23.1.200 0/g' -e 's/lb_kind DR/lb_kind NAT/g'
 }
 
 #cat kl_global.conf
